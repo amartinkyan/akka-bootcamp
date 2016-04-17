@@ -12,13 +12,6 @@ namespace WinTail
         public const string ExitCommand = "exit";
         public const string StartCommand = "start";
 
-        private readonly IActorRef _validationActor;
-
-        public ConsoleReaderActor(IActorRef validationActor)
-        {
-            _validationActor = validationActor;
-        }
-
         protected override void OnReceive(object message)
         {
             if (message.Equals(StartCommand))
@@ -40,20 +33,17 @@ namespace WinTail
             {
                 // if user typed ExitCommand, shut down the entire actor
                 // system (allows the process to exit)
-                Context.System.Shutdown();
+                Context.System.Terminate();
                 return;
             }
 
-            // otherwise, just hand message off to validation actor
-            // (by telling its actor ref)
-            _validationActor.Tell(message);
+            // otherwise, just send message off to validation actor
+            Context.ActorSelection("akka://MyActorSystem/user/validationActor").Tell(message);
         }
 
         private void DoPrintInstructions()
         {
-            Console.WriteLine("Write whatever you want into the console!");
-            Console.WriteLine("Some entries will pass validation, and some won't...\n\n");
-            Console.WriteLine("Type 'exit' to quit this application at any time.\n");
+            Console.WriteLine("Please provide the URI of a log file on disk.\n");
         }
     }
 }
